@@ -195,6 +195,11 @@
   gap: 10px;
 }
 
+.course-detail {
+  display: grid;
+  gap: 12px;
+}
+
 @keyframes float-in {
   from {
     opacity: 0;

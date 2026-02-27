@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import API from "../api/api.js";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +7,7 @@ function Dashboard() {
   const [courses, setCourses] = useState([]);
   const [user, setUser] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const [form, setForm] = useState({
     courseName: "",
     courseDescription: "",
@@ -20,16 +21,18 @@ function Dashboard() {
     return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
   };
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const res = await API.get("/courses");
-      setCourses(res.data.courses);
+      const courseList = res.data?.courses || [];
+      setCourses(courseList);
+      setSelectedCourse((current) => current ?? courseList[0] ?? null);
     } catch (error) {
       console.error("Failed to fetch courses:", error);
     }
-  };
+  }, []);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const res = await API.get("/auth/profile");
       setUser(res.data.user);
@@ -40,7 +43,7 @@ function Dashboard() {
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -48,13 +51,18 @@ function Dashboard() {
       navigate("/");
       return;
     }
-    fetchCourses();
-    fetchUserProfile();
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, [navigate]);
+
+    const timeoutId = setTimeout(() => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+      void fetchCourses();
+      void fetchUserProfile();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchCourses, fetchUserProfile, navigate]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -119,6 +127,7 @@ function Dashboard() {
   const role = user?.role || "student";
   const isInstructor = role === "instructor" || role === "admin";
   const isStudent = role === "student";
+  const activeCourse = selectedCourse || courses[0];
 
   return (
     <div className="page page-wide">
@@ -181,12 +190,41 @@ function Dashboard() {
           )}
         </div>
 
+        {isStudent && activeCourse && (
+          <div className="card">
+            <div className="section-title">Course Details</div>
+            <div className="course-detail">
+              <h3>{activeCourse.courseName}</h3>
+              <p className="muted">{activeCourse.courseDescription}</p>
+              <div className="course-meta">
+                <span>Instructor: {activeCourse.instructor}</span>
+                {activeCourse.dateOfCourse && (
+                  <span>Start Date: {formatDate(activeCourse.dateOfCourse)}</span>
+                )}
+              </div>
+              <div className="course-actions">
+                <button
+                  className={`btn ${enrolledCourses.includes(activeCourse._id) ? 'btn-danger' : 'btn-primary'}`}
+                  onClick={() =>
+                    enrolledCourses.includes(activeCourse._id)
+                      ? handleUnenroll(activeCourse._id)
+                      : handleEnroll(activeCourse._id)
+                  }
+                >
+                  {enrolledCourses.includes(activeCourse._id) ? 'Unenroll' : 'Enroll'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="course-grid">
           {courses.map((course, index) => (
             <div
               key={course._id}
               className="course-card"
               style={{ animationDelay: `${index * 60}ms` }}
+              onClick={() => isStudent && setSelectedCourse(course)}
             >
               <div>
                 <h4>{course.courseName}</h4>
