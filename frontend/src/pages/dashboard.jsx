@@ -14,6 +14,12 @@ function Dashboard() {
     dateOfCourse: "",
   });
 
+  const formatDate = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
+  };
+
   const fetchCourses = async () => {
     try {
       const res = await API.get("/courses");
@@ -26,6 +32,7 @@ function Dashboard() {
   const fetchUserProfile = async () => {
     try {
       const res = await API.get("/auth/profile");
+      setUser(res.data.user);
       const enrolledIds = res.data.user.enrolledCourses || [];
       setEnrolledCourses(enrolledIds.map(course => 
         typeof course === 'string' ? course : course._id
@@ -36,13 +43,18 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+      return;
+    }
     fetchCourses();
     fetchUserProfile();
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-  }, []);
+  }, [navigate]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -96,6 +108,9 @@ function Dashboard() {
   };
 
   const logout = () => {
+    API.post("/auth/logout").catch(() => {
+      console.warn("Logout request failed; clearing local session.");
+    });
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
@@ -179,6 +194,9 @@ function Dashboard() {
               </div>
               <div className="course-meta">
                 <span>Instructor: {course.instructor}</span>
+                {course.dateOfCourse && (
+                  <span>Start Date: {formatDate(course.dateOfCourse)}</span>
+                )}
               </div>
               <div className="course-actions">
                 {isStudent && (

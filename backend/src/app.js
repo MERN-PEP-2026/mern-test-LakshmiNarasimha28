@@ -16,14 +16,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-    res.status(200).json({ success: true, message: "Welcome to the CMS API" });
-});
-
-app.use("/api/auth", authRoutes);
-app.use("/api/courses", courseRoutes);
-
-export const notFound = (req, res, next) => {   
+export const notFound = (req, res) => {
     res.status(404).json({
         success: false,
         message: "Route not found",
@@ -37,5 +30,15 @@ export const errorHandler = (err, req, res, next) => {
         message: "Server error",
     });
 };
+
+app.get("/", (req, res) => {
+    res.status(200).json({ success: true, message: "Welcome to the CMS API" });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/courses", courseRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

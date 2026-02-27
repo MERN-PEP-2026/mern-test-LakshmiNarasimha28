@@ -1,15 +1,21 @@
 import Course from '../models/course.js';
 import User from '../models/user.js';
 
-export const createCourse = async (courseName, courseDescription, instructor, userId) => {
-    if (!courseName || !courseDescription || !instructor) {
+export const createCourse = async (courseName, courseDescription, instructor, dateOfCourse, userId) => {
+    if (!courseName || !courseDescription || !instructor || !dateOfCourse) {
         throw new Error('All fields are required');
+    }
+
+    const parsedDate = new Date(dateOfCourse);
+    if (Number.isNaN(parsedDate.getTime())) {
+        throw new Error('Invalid course date');
     }
 
     const course = await Course.create({
         courseName,
         courseDescription,
         instructor,
+        dateOfCourse: parsedDate,
         createdBy: userId,
     });
 
@@ -43,7 +49,7 @@ export const getCourses = async (search, instructor, createdBy, sortBy) => {
     return courses;
 };
 
-export const updateCourse = async (courseId, userId, role, courseName, courseDescription, instructor) => {
+export const updateCourse = async (courseId, userId, role, courseName, courseDescription, instructor, dateOfCourse) => {
     const course = await Course.findById(courseId);
 
     if (!course) {
@@ -54,13 +60,20 @@ export const updateCourse = async (courseId, userId, role, courseName, courseDes
         throw new Error('Unauthorized - Only creator can edit');
     }
 
-    if (!courseName && !courseDescription && !instructor) {
+    if (!courseName && !courseDescription && !instructor && !dateOfCourse) {
         throw new Error('At least one field must be updated');
     }
 
     if (courseName) course.courseName = courseName;
     if (courseDescription) course.courseDescription = courseDescription;
     if (instructor) course.instructor = instructor;
+    if (dateOfCourse) {
+        const parsedDate = new Date(dateOfCourse);
+        if (Number.isNaN(parsedDate.getTime())) {
+            throw new Error('Invalid course date');
+        }
+        course.dateOfCourse = parsedDate;
+    }
 
     await course.save();
     return course;

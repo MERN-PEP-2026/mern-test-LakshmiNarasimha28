@@ -2,10 +2,10 @@ import { createCourse, getCourses, updateCourse, deleteCourse, enrollCourse, une
 
 export const createCourseController = async (req, res) => {
   try {
-    const { courseName, courseDescription, instructor } = req.body;
+    const { courseName, courseDescription, instructor, dateOfCourse } = req.body;
     const userId = req.user.userId;
 
-    const course = await createCourse(courseName, courseDescription, instructor, userId);
+    const course = await createCourse(courseName, courseDescription, instructor, dateOfCourse, userId);
 
     res.status(201).json({
       success: true,
@@ -41,10 +41,10 @@ export const getCoursesController = async (req, res) => {
 export const updateCourseController = async (req, res) => {
   try {
     const { id } = req.params;
-    const { courseName, courseDescription, instructor } = req.body;
+    const { courseName, courseDescription, instructor, dateOfCourse } = req.body;
     const userId = req.user.userId;
 
-    const course = await updateCourse(id, userId, req.user.role, courseName, courseDescription, instructor);
+    const course = await updateCourse(id, userId, req.user.role, courseName, courseDescription, instructor, dateOfCourse);
 
     res.status(200).json({
       success: true,

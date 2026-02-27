@@ -184,6 +184,8 @@
 }
 
 .course-meta {
+  display: grid;
+  gap: 4px;
   font-size: 0.85rem;
   color: var(--muted);
 }

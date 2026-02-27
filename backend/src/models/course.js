@@ -14,6 +14,10 @@ const courseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    dateOfCourse: {
+      type: Date,
+      required: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
