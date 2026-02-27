@@ -31,7 +31,6 @@ export const sendOtpEmail = async (email, otp) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log('OTP email sent successfully:', info.messageId);
         return { success: true, messageId: info.messageId };
     } catch (error) {
         console.error('Error sending OTP email:', error);
@@ -56,7 +55,6 @@ export const sendWelcomeEmail = async (email, name) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log('Welcome email sent successfully');
     } catch (error) {
         console.error('Error sending welcome email:', error);
     }

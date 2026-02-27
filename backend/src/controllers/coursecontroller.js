@@ -1,4 +1,4 @@
-import { createCourse, getCourses, updateCourse, deleteCourse } from '../services/courseservice.js';
+import { createCourse, getCourses, updateCourse, deleteCourse, enrollCourse, unenrollCourse } from '../services/courseservice.js';
 
 export const createCourseController = async (req, res) => {
   try {
@@ -44,7 +44,7 @@ export const updateCourseController = async (req, res) => {
     const { courseName, courseDescription, instructor } = req.body;
     const userId = req.user.userId;
 
-    const course = await updateCourse(id, userId, courseName, courseDescription, instructor);
+    const course = await updateCourse(id, userId, req.user.role, courseName, courseDescription, instructor);
 
     res.status(200).json({
       success: true,
@@ -76,7 +76,7 @@ export const deleteCourseController = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.userId;
 
-    await deleteCourse(id, userId);
+    await deleteCourse(id, userId, req.user.role);
 
     res.status(200).json({
       success: true,
@@ -96,6 +96,56 @@ export const deleteCourseController = async (req, res) => {
       });
     }
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const enrollCourseController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    const result = await enrollCourse(id, userId);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    if (error.message.includes('not found')) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const unenrollCourseController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    const result = await unenrollCourse(id, userId);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    if (error.message.includes('not found')) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    res.status(400).json({
       success: false,
       message: error.message,
     });

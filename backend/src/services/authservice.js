@@ -20,10 +20,7 @@ export const signup = async (name, email, password, role = 'student') => {
     const otp = generateOtp();
     await new Otp({ email, otp, expiresAt: new Date(Date.now() + 10 * 60 * 1000) }).save();
 
-    const emailResult = await sendOtpEmail(email, otp);
-    if (!emailResult.success) {
-        console.log(`OTP for ${email}: ${otp}`);
-    }
+    await sendOtpEmail(email, otp);
 
     return { message: 'OTP sent to email', email };
 };
