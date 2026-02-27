@@ -114,6 +114,7 @@ export const enrollCourseController = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
+    console.error('Enroll error:', error);
     if (error.message.includes('not found')) {
       return res.status(404).json({
         success: false,
@@ -122,7 +123,7 @@ export const enrollCourseController = async (req, res) => {
     }
     res.status(400).json({
       success: false,
-      message: error.message,
+      message: error.message || 'Failed to enroll',
     });
   }
 };

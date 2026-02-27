@@ -66,6 +66,7 @@ function Dashboard() {
       fetchUserProfile();
     } catch (error) {
       const message = error.response?.data?.message || error.message || "Failed to enroll";
+      console.error("Enroll error details:", error);
       alert(message);
     }
   };
